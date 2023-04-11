@@ -7,7 +7,7 @@ With version 2 or other firmwares that can report the values, the plugin will re
 
 ## Usage
 
-Slide the sliders, click the buttons. The Up and Down buttons select the range for the feedrate and flowrate. The arrows will automatically be disabled if changing the range is not possible, i.e. trying to move the range more than by 100%. (You must be able to display the 'current display value' inside thenext range. You don't have to send it until you get to the value desired.)
+Slide the sliders, click the buttons. The Up and Down buttons select the range for the feedrate and flowrate. The arrows will automatically be disabled if changing the range is not possible, i.e. trying to move the range more than by 100%. (You must be able to display the 'current display value' inside the next range. You don't have to send it until you get to the value desired.)
 
 ![](./image/settings.png)
 
