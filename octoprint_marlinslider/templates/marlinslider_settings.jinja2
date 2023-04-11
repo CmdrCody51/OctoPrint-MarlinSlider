@@ -1,0 +1,148 @@
+<h3>{{ _('Marlin Slider Control') }}</h3>
+<div>
+    <form class="form-horizontal">
+        <h4>{{ _('Fan Speed Control') }}</h4>
+        <div class="control-group">
+            <label class="control-label">{{ _('Default Value') }}</label>
+            <div class="controls">
+                <div class="input-append">
+                    <input type="number" min="0" max="100" class="input-mini" data-bind="attr: { title: defaultTitle }, value: settings.plugins.marlinslider.defaultFanSpeed">
+                    <span class="add-on">%</span>
+                </div>
+                <span class="help-block">{{ _('The default value the fan slider will be set to when opening OctoPrint\'s UI') }}</span>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">{{ _('Remember Last Speed') }}</label>
+            <div class="controls">
+                <div class="input-append">
+                    <input type="checkbox" class="input-mini" data-bind="attr: { title: lastspeedTitle }, checked: settings.plugins.marlinslider.defaultLastSpeed">
+                </div>
+                <span class="help-block">{{ _('Instead of the default speed value, the slider will use the last sent speed as the default value') }}</span>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">{{ _('Minimum Speed') }}</label>
+            <div class="controls">
+                <div class="input-append">
+                    <input type="number" min="0" max="100" class="input-mini" data-bind="attr: { title: FanminTitle }, value: settings.plugins.marlinslider.minSpeed">
+                    <span class="add-on">%</span>
+                </div>
+                <span class="help-block">{{ _('Any value sent which is below this value will be increased to meet this speed. Useful if your fan doesn\'t work below a certain threshold.') }}</span>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">{{ _('Maximum Speed') }}</label>
+            <div class="controls">
+                <div class="input-append">
+                    <input type="number" min="0" max="100" class="input-mini" data-bind="attr: { title: FanmaxTitle }, value: settings.plugins.marlinslider.maxSpeed">
+                    <span class="add-on">%</span>
+                </div>
+                <span class="help-block">{{ _('Any value sent which is above this value will be decreased to meet this speed. Useful if your fan is too strong on full speed.') }}</span>
+            </div>
+        </div>
+        <p><i>{{ _('NOTE: The min/max setting has no effect when you are printing from an SD card that is attached directly to the printer as the gcode does not pass through OctoPrint.') }}</i></p>
+        <div class="control-group">
+            <label class="control-label">{{ _('Disable M106 / M107') }}</label>
+            <div class="controls">
+                <div class="input-append">
+                    <input type="checkbox" class="input-mini" data-bind="attr: { title: FancommonTitle }, checked: settings.plugins.marlinslider.lockfan">
+                </div>
+                <span class="help-block">{{ _('Disables cooling fan commands from reaching the printer. Use with caution. (This performs the same function as the padlock button in the fan section of the controls page)') }}</span>
+            </div>
+        </div>
+        <h4>{{ _('Feedrate Control') }}</h4>
+        <div class="control-group">
+            <label class="control-label">{{ _('Default Value') }}</label>
+            <div class="controls">
+                <div class="input-append">
+                    <input type="number" min="0" max="999" class="input-mini" data-bind="attr: { title: defaultTitle }, value: settings.plugins.marlinslider.defaultFeedR">
+                    <span class="add-on">%</span>
+                </div>
+                <span class="help-block">{{ _('The default value the feedrate slider will be set to when opening OctoPrint\'s UI') }}</span>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">{{ _('Remember Last Feedrate') }}</label>
+            <div class="controls">
+                <div class="input-append">
+                    <input type="checkbox" class="input-mini" data-bind="attr: { title: lastspeedTitle }, checked: settings.plugins.marlinslider.defaultLastFeedR">
+                </div>
+                <span class="help-block">{{ _('Instead of the default feedrate value, the slider will use the last sent feedrate as the default value') }}</span>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">{{ _('Minimum Feedrate') }}</label>
+            <div class="controls">
+                <div class="input-append">
+                    <input type="number" min="0" max="999" class="input-mini" data-bind="attr: { title: FeedminTitle }, value: settings.plugins.marlinslider.minFeedR">
+                    <span class="add-on">%</span>
+                </div>
+                <span class="help-block">{{ _('Any value sent which is below this value will be increased to meet this feedrate.') }}</span>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">{{ _('Maximum Feedrate') }}</label>
+            <div class="controls">
+                <div class="input-append">
+                    <input type="number" min="0" max="999" class="input-mini" data-bind="attr: { title: FeedmaxTitle }, value: settings.plugins.marlinslider.maxFeedR">
+                    <span class="add-on">%</span>
+                </div>
+                <span class="help-block">{{ _('Any value sent which is above this value will be decreased to meet this feedrate.') }}</span>
+            </div>
+        </div>
+        <p><i>{{ _('NOTE: The min/max setting has no effect when you are printing from an SD card that is attached directly to the printer as the gcode does not pass through OctoPrint.') }}</i></p>
+        <h4>{{ _('Flowrate Control') }}</h4>
+        <div class="control-group">
+            <label class="control-label">{{ _('Default Value') }}</label>
+            <div class="controls">
+                <div class="input-append">
+                    <input type="number" min="0" max="999" class="input-mini" data-bind="attr: { title: defaultTitle }, value: settings.plugins.marlinslider.defaultFlowR">
+                    <span class="add-on">%</span>
+                </div>
+                <span class="help-block">{{ _('The default value the flowrate slider will be set to when opening OctoPrint\'s UI') }}</span>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">{{ _('Remember Last Flowrate') }}</label>
+            <div class="controls">
+                <div class="input-append">
+                    <input type="checkbox" class="input-mini" data-bind="attr: { title: lastspeedTitle }, checked: settings.plugins.marlinslider.defaultLastFlowR">
+                </div>
+                <span class="help-block">{{ _('Instead of the default flowrate value, the slider will use the last sent flowrate as the default value') }}</span>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">{{ _('Minimum Flowrate') }}</label>
+            <div class="controls">
+                <div class="input-append">
+                    <input type="number" min="0" max="999" class="input-mini" data-bind="attr: { title: FlowminTitle }, value: settings.plugins.marlinslider.minFlowR">
+                    <span class="add-on">%</span>
+                </div>
+                <span class="help-block">{{ _('Any value sent which is below this value will be increased to meet this flowrate.') }}</span>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">{{ _('Maximum Flowrate') }}</label>
+            <div class="controls">
+                <div class="input-append">
+                    <input type="number" min="0" max="999" class="input-mini" data-bind="attr: { title: FlowmaxTitle }, value: settings.plugins.marlinslider.maxFlowR">
+                    <span class="add-on">%</span>
+                </div>
+                <span class="help-block">{{ _('Any value sent which is above this value will be decreased to meet this flowrate.') }}</span>
+            </div>
+        </div>
+        <p><i>{{ _('NOTE: The min/max setting has no effect when you are printing from an SD card that is attached directly to the printer as the gcode does not pass through OctoPrint.') }}</i></p>
+        <h4>{{_('Notification Auto Hide Delay') }}</h4>
+        <div class="control-group">
+            <label class="control-label">{{ _('Notification Autohide Delay') }}</label>
+            <div class="controls">
+                <div class="input-append">
+                    <input type="number" min="0" class="input-mini" data-bind="attr: {title: noticeTitle }, value: settings.plugins.marlinslider.notifyDelay">
+                    <span class="add-on">ms</span>
+                </div>
+                <span class="help-block">{{ _('Delay (in milliseconds) before notifications are auto-hidden. Set to 0 to disable notifications.') }}</span>
+            </div>
+        </div>
+    </form>
+</div>
