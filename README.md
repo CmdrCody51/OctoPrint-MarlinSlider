@@ -24,5 +24,5 @@ or manually using this URL:
 
 ## ABOUT
 
-This is a fork from the first OctoPrint Fan Speed Slider by NTOFF since the main project is abandoned. Then BERTUGARANGOU's fork that made it compatible with Python 3. And then JNEILLIII who added the xxxx<br>
+This is a fork from the first OctoPrint Fan Speed Slider by NTOFF since the main project is abandoned. Then BERTUGARANGOU's fork that made it compatible with Python 3. And then JNEILLIII who added the logic to set fan speed based on sent/received gcode.<br>
 I only filled out the two other sliders after Marlin added the responses.
