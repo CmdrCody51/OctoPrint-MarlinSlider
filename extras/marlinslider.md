@@ -41,4 +41,4 @@ compatibility:
 **TODO**: 
 Longer description of your plugin, configuration examples etc.
 This part will be visible on the page at http://plugins.octoprint.org/plugin/marlinslider/
-Adds a sliders to the controls page for setting the speed of your fans, feedrate and flowrate. with a settings page that allows limiting the fan's output power and min/max feedrates and flowrates.
+Adds sliders to the controls page for setting the speed of your fans, feedrate and flowrate. with a settings page that allows limiting the fan's output power and min/max feedrates and flowrates.
