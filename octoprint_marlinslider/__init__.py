@@ -204,6 +204,10 @@ class MarlinSliderPlugin(
             flowNum = re.search("S(\d+\.?\d*)", cmd)
             if flowNum and flowNum.group(1):
                 self._plugin_manager.send_plugin_message(self._identifier, {'flowNum': float(flowNum.group(1))})
+        elif gcode and gcode.startswith('T'):
+            toolNum = re.search("T(\d+\.?\d*)", cmd)
+            if toolNum and toolNum.group(1):
+                self._plugin_manager.send_plugin_message(self._identifier, {'toolNum': float(toolNum.group(1))})
 
 # Send: N6 M220*37
 # Recv: FR:100%
@@ -222,6 +226,7 @@ class MarlinSliderPlugin(
                 tool = re.search("E(\d+\.?\d*)", line)
                 flowNum = re.search("Flow: (\d+\.?\d*)", line)
                 if flowNum and flowNum.group(1):
+                    self._plugin_manager.send_plugin_message(self._identifier, {'toolNum': float(tool.group(1))})
                     self._plugin_manager.send_plugin_message(self._identifier, {'flowNum': float(flowNum.group(1))})
         return line
 
