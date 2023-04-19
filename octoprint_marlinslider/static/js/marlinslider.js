@@ -40,6 +40,9 @@ $(function () {
         self.control.baseFlowRate = new ko.observable(100);     //center of slider
         self.control.displayfeedRate = new ko.observable(100);  //offset of slider to actual value
         self.control.displayflowRate = new ko.observable(100);  //offset of slider to actual value
+        self.control.toolNum = new ko.observable(0);            //tool number
+        self.settings.lastSentTool = 0;                         //last known tool
+        self.control.toolBlock = [100,100,100,100,100,100,100,100]; //preload default flows for 8 tools (2022 max)
 
         self.control.lockTitle = new ko.observable(gettext("Unlocked")); //will set the hover title info for the fan lock button
 
@@ -56,6 +59,8 @@ $(function () {
         self.settings.FlowmaxTitle = ko.observable(gettext("Set this upto 999%. REMEMBER! that is 10 times your normal extrusion rate!") + self.settings.FlowcommonTitle());
         self.settings.noticeTitle = ko.observable(gettext("Notifications only apply when setting via the slider + button in the UI. Set to 0 (zero) to disable notifications."));
         self.settings.lastspeedTitle = ko.observable(gettext("Instead of defaulting to the value set by \"Default Value\", the slider will be set to the last sent value on load/refresh. \n Note: It takes into account the min/max value setting and overrides the \"Default Value\" setting."));
+        self.control.feedCheckTitle = ko.observable(gettext("Check current feedrate override.\nQueries printer for value."));
+        self.control.flowCheckTitle = ko.observable(gettext("Check current tool and flowrate override.\nQueries printer for values."));
 
         self.showNotify = function (self, options) {
             options.title = "Marlin Slider Control";
@@ -250,15 +255,24 @@ $(function () {
             self.control.baseFlowRate( self.control.baseFlowRate() - 100 );
             self.control.displayflowRate( hold - (self.control.baseFlowRate() - 100))
         }
-        
-        //ph34r ?????
+
         try {
-            //for some reason touchui uses "jog general" for the fan controls? Oh well, makes my job easier
+            // find the old stuff
+            $("#control-jog-extrusion").find("button").eq(0).attr("id", "ms-extrude");
+            $("#control-jog-extrusion").find("button").eq(1).attr("id", "ms-retract");
+            $("#control-jog-extrusion").find("button").eq(2).attr("id", "ms-tool");
+            $("#control-jog-extrusion").find("button").eq(3).attr("id", "ms-info");
             $("#control-jog-general").find("button").eq(0).attr("id", "motors-off");
             $("#control-jog-general").find("button").eq(1).attr("id", "fan-on");
             $("#control-jog-general").find("button").eq(2).attr("id", "fan-off");
-            //If not TouchUI then remove standard buttons + add slider + new buttons
+            // and replace it
             if ($("#touch body").length == 0) {
+                $('#ms-tool').replaceWith("\
+                    <button class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" \
+                    data-bind=\"enable: isOperational() && !isPrinting() && !isPaused()\" id=\"ms-tool\">&nbsp;Tool&nbsp;\
+                    <span data-bind=\"text: toolNum()\"></span>&nbsp;&nbsp;<span class=\"caret\"></span></button>\
+                ");
+                $('#control-jog-extrusion .text-info').remove();
                 //remove original fan on/off buttons
                 $("#fan-on").remove();
                 $("#fan-off").remove();
@@ -289,7 +303,7 @@ $(function () {
                             click: function() { $root.displayFeedUp() } \"><i class=\"fas fa-arrow-up\"></i></button>\
                         </div><br><div id=\"FeedSendFeedCheck\" class=\"btn-group\">\
                         <button class=\"btn\" id=\"feedcheck\" data-bind=\"enable: isOperational() && loginState.isUser(), click: \
-                        function() { $root.sendCustomCommand({ type: 'command', commands: ['M220'] }) } \">\
+                        function() { $root.sendCustomCommand({ type: 'command', commands: ['M220'] }) }, attr: { title: feedCheckTitle } \">\
                             <i class=\"fas fa-check\"></i></button>\
                         <button class=\"btn\" id=\"feed-set\" style=\"width: 80%\" data-bind=\"enable: isOperational() && \
                         loginState.isUser(), click: function() { $root.sendFeedR() }\">" + gettext("Feedrate") + ":\
@@ -307,7 +321,7 @@ $(function () {
                             click: function() { $root.displayFlowUp() } \"><i class=\"fas fa-arrow-up\"></i></button>\
                         </div><br><div id=\"FlowSendFlowCheck\" class=\"btn-group\">\
                         <button class=\"btn\" id=\"flowcheck\" data-bind=\"enable: isOperational() && loginState.isUser(), click: \
-                        function() { $root.sendCustomCommand({ type: 'command', commands: ['M221'] }) } \">\
+                        function() { $root.sendCustomCommand({ type: 'command', commands: ['M221'] }) }, attr: { title: flowCheckTitle } \">\
                             <i class=\"fas fa-check\"></i></button>\
                         <button class=\"btn\" id=\"flow-set\" style=\"width: 80%\" data-bind=\"enable: isOperational() && \
                         loginState.isUser(), click: function() { $root.sendFlowR() }\">" + gettext("Flowrate") + ":\
@@ -413,7 +427,22 @@ $(function () {
                 self.control.displayflowRate(data.flowNum - (self.control.baseFlowRate() - 100));
                 self.settings.defaultFlowR(data.flowNum);
                 self.settings.lastSentFlowR(data.flowNum);
+                self.control.toolBlock[self.control.lastSentTool] = data.flowNum;
             }
+        }
+        
+        // handle tool change
+        if(data.hasOwnProperty('toolNum')){
+            self.control.toolNum(data.toolNum);
+            if ( self.control.lastSentTool != self.control.toolNum() ) {
+                self.control.flowRate(self.control.toolBlock[data.toolNum]);
+                     self.control.baseFlowRate(parseInt(self.control.toolBlock[data.toolNum] / 100) * 100);
+                     if (self.control.baseFlowRate() < 100) { self.control.baseFlowRate(100); }
+                     self.control.displayflowRate(self.control.toolBlock[data.toolNum] - (self.control.baseFlowRate() - 100));
+                     self.settings.defaultFlowR(self.control.toolBlock[data.toolNum]);
+                     self.settings.lastSentFlowR(self.control.toolBlock[data.toolNum]);
+                 }
+            self.control.lastSentTool = data.toolNum;
         }
 
         self.onBeforeBinding = function () {
@@ -485,20 +514,3 @@ $(function () {
         elements: []
     });
 });
-
-/*
-            } else {
-                //replace touch UI's fan on button with one that sends whatever speed is set in this plugin
-                $("#fan-on").remove();title
-                $("#control-jog-general").find("button").eq(0).after("\
-                    <button class=\"btn btn-block control-box\" id=\"fan-on\" data-bind=\"enable: isOperational() && loginState.isUser(), click: function() { $root.sendFanSpeed() }\">" + gettext("Fan on") + "</button>\
-                ");
-                //also add spin box + button below in its own section, button is redundant but convenient
-                $("#control-jog-feedrate").append("\
-                    <input type=\"number\" style=\"width: 150px\" data-bind=\"slider: {min: 00, max: 100, step: 1, value: fanSpeed, tooltip: 'hide'}\">\
-                    <button class=\"btn btn-block\" style=\"width: 169px\" data-bind=\"enable: isOperational() && loginState.isUser() && !islocked(), click: function() { $root.sendFanSpeed() }\">" + gettext("Fan speed:") + "<span data-bind=\"text: fanSpeed() + '%'\"></span></button>\
-                    <button class=\"btn \" id=\"fan-lock\" data-bind=\"enable: isOperational() && loginState.isUser(), click: function() { $root.lockFanInput() }, attr: { title: lockTitle } \">\
-                        Fan Control Lock: <i class=\"fa fa-unlock\" data-bind=\"css: {'fa-lock': islocked(), 'fa-unlock': !islocked()}\"></i>\
-                    </button>\
-                    ");
-*/
