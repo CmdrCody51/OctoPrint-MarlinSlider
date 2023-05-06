@@ -403,12 +403,14 @@ $(function () {
             if (plugin != "marlinslider") {
                 return;
             }
+
             // handle fan
             if(data.hasOwnProperty('fanPwm')){
                 self.control.fanSpeed(parseInt(data.fanPwm / 255 * 100));
                 self.settings.defaultFanSpeed(parseInt(data.fanPwm / 255 * 100));
                 self.settings.lastSentSpeed(parseInt(data.fanPwm / 255 * 100));
             }
+
             // handle feed
             if(data.hasOwnProperty('feedNum')){
                 self.control.feedRate(data.feedNum);
@@ -429,20 +431,20 @@ $(function () {
                 self.settings.lastSentFlowR(data.flowNum);
                 self.control.toolBlock[self.control.lastSentTool] = data.flowNum;
             }
-        }
-        
-        // handle tool change
-        if(data.hasOwnProperty('toolNum')){
-            self.control.toolNum(data.toolNum);
-            if ( self.control.lastSentTool != self.control.toolNum() ) {
-                self.control.flowRate(self.control.toolBlock[data.toolNum]);
-                     self.control.baseFlowRate(parseInt(self.control.toolBlock[data.toolNum] / 100) * 100);
-                     if (self.control.baseFlowRate() < 100) { self.control.baseFlowRate(100); }
-                     self.control.displayflowRate(self.control.toolBlock[data.toolNum] - (self.control.baseFlowRate() - 100));
-                     self.settings.defaultFlowR(self.control.toolBlock[data.toolNum]);
-                     self.settings.lastSentFlowR(self.control.toolBlock[data.toolNum]);
-                 }
-            self.control.lastSentTool = data.toolNum;
+
+            // handle tool change
+            if(data.hasOwnProperty('toolNum')){
+                self.control.toolNum(data.toolNum);
+                if ( self.control.lastSentTool != self.control.toolNum() ) {
+                    self.control.flowRate(self.control.toolBlock[data.toolNum]);
+                    self.control.baseFlowRate(parseInt(self.control.toolBlock[data.toolNum] / 100) * 100);
+                    if (self.control.baseFlowRate() < 100) { self.control.baseFlowRate(100); }
+                    self.control.displayflowRate(self.control.toolBlock[data.toolNum] - (self.control.baseFlowRate() - 100));
+                    self.settings.defaultFlowR(self.control.toolBlock[data.toolNum]);
+                    self.settings.lastSentFlowR(self.control.toolBlock[data.toolNum]);
+                }
+                self.control.lastSentTool = data.toolNum;
+            }
         }
 
         self.onBeforeBinding = function () {
