@@ -15,6 +15,12 @@ Slide the sliders, click the buttons. The Up and Down buttons select the range f
 
 * *Note: MarlinSlider does not follow the fan speed at all and does not follow the feedrate/flowrate not set through OctoPrint. If the feedrate/flowrate is set via the SD card or an LCD panel on the printer, the slider will not respond to the change. You can update the values using the Checkmark, if not printing from the SD Card.*
 
+## Limitations
+
+Currently M710 Controller Fans and M123 - Fan Tachometers are not processed at all.
+The Fan slider displays and controls the current tool/hotend parts cooling fan only.
+I don't have every possible 3d printer in the world ("'tis a consummation devoutly to be wish'd.") so I can not test all operations. Just fill out a Feature request with relevant logs (especially serial logs) and I'll see what we can do.
+
 ## Setup
 
 Install via the bundled [Plugin Manager](https://docs.octoprint.org/en/master/bundledplugins/pluginmanager.html)
