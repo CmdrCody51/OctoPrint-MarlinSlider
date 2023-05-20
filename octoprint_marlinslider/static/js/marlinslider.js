@@ -40,9 +40,13 @@ $(function () {
         self.control.baseFlowRate = new ko.observable(100);     //center of slider
         self.control.displayfeedRate = new ko.observable(100);  //offset of slider to actual value
         self.control.displayflowRate = new ko.observable(100);  //offset of slider to actual value
+        self.control.feedBackup = new ko.observable(100);       //feedrate backup slot
         self.control.toolNum = new ko.observable(0);            //tool number
-        self.settings.lastSentTool = 0;                         //last known tool
+        self.control.lastSentTool = -1;                         //last known tool
         self.control.toolBlock = [100,100,100,100,100,100,100,100]; //preload default flows for 8 tools (2022 max)
+        self.control.fanBlock = [-1,-1,-1,-1,-1,-1,-1,-1];      //preload default fans for 8 tools (2022 max)
+        self.control.fan2Block = [-1,-1,-1,-1,-1,-1,-1,-1];     //preload default secondary fans for 8 tools (2022 max)
+        self.control.matlBlock = [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]; //preload default fans for 10 materials (2022 max)
 
         self.control.lockTitle = new ko.observable(gettext("Unlocked")); //will set the hover title info for the fan lock button
 
@@ -406,36 +410,143 @@ $(function () {
 
             // handle fan
             if(data.hasOwnProperty('fanPwm')){
-                self.control.fanSpeed(parseInt(data.fanPwm / 255 * 100));
-                self.settings.defaultFanSpeed(parseInt(data.fanPwm / 255 * 100));
-                self.settings.lastSentSpeed(parseInt(data.fanPwm / 255 * 100));
+                // M106 or M107 or M145
+                // Nothing for M710 controller fans or M123 tachometers
+                // alert("EEA@O S" + data.fanPwm + "\nP" + data.fanP + " I" + data.fanI + " T" + data.fanT + "\nP" + data.fanIndex + " I" + data.fanPreset + " T" + data.fanSecnd );
+                // It's an M107 with no P or it's an M106 with or w/o S - or - a M145
+                if ((data.fanP+data.fanI+data.fanT) <= -3) {
+                    if (data.fanI == -10) {
+                        // Only from M145!!! Just save the preset
+                        self.control.matlBlock[data.fanPreset] = data.fanPwm;
+                        // alert("Fan material Block\n" + self.control.matlBlock);
+                    }
+                    else {
+                        // Just M106 to current fan
+                        self.control.fanSpeed(parseInt(data.fanPwm / 255 * 100));
+                        self.settings.defaultFanSpeed(parseInt(data.fanPwm / 255 * 100));
+                        self.settings.lastSentSpeed(parseInt(data.fanPwm / 255 * 100));
+                    }
+                }
+                else {
+                    // now for the 'fun'...
+                    // M106 with I 0-9 (supercedes any S or T word sent)
+                    if (data.fanI > 0) {
+                        new_fanPwm = self.control.matlBlock[data.fanPreset];
+                        if (new_fanPwm < 0) {
+                            var options = {
+                               type: "info",
+                               hide: true,
+                               text: gettext('FAULT!! Use of Fan I word on uninitialized material!'),
+                               addclass:  'fan_construct_fault',
+                            }
+                            self.showNotify(self, options);
+                        }
+                        // I with popup on S P T alert - P Are we sure??
+                        if ((data.fanP > 0) || (data.fanT > 0) || (data.fanPwm >= 0)) {
+                            var options = {
+                               type: "info",
+                               hide: true,
+                               text: gettext('CAUTION!! Use of I word invalidates S P or T words!'),
+                               addclass:  'fan_construct_fault',
+                            }
+                            self.showNotify(self, options);
+                        }
+                        else {
+                            // So make current fan that preset
+                            self.control.fanSpeed(parseInt(new_fanPwm / 255 * 100));
+                            self.settings.defaultFanSpeed(parseInt(new_fanPwm / 255 * 100));
+                            self.settings.lastSentSpeed(parseInt(new_fanPwm / 255 * 100));
+                        }
+                    }
+                    // M106 with T must have a P 0-7
+                    if (data.fanT > 0) {
+                        // check P no S
+                        if ((data.fanP < 0) || (data.fanI > 0)) {
+                            var options = {
+                               type: "info",
+                               hide: true,
+                               text: gettext('CAUTION!! Use of T word requires P word and is invalidated by I words!'),
+                               addclass:  'fan_construct_fault',
+                            }
+                            self.showNotify(self, options);
+                        }
+                        else {
+                            // M106 with P 0-7 and T[1,2,3-255]
+                            if (data.fanSecnd > 2) { self.control.fan2Block[data.fanIndex] = data.fanSecnd; }
+                            else {
+                                if (data.fanSecnd == 2) {
+                                    new_fanPwm = self.control.fan2Block[data.fanIndex];
+                                }
+                                else {
+                                    new_fanPwm = self.control.fanBlock[data.fanIndex]; }
+                                self.control.fanSpeed(parseInt(new_fanPwm / 255 * 100));
+                                self.settings.defaultFanSpeed(parseInt(new_fanPwm / 255 * 100));
+                                self.settings.lastSentSpeed(parseInt(new_fanPwm / 255 * 100));
+                            }
+                        }
+                    }
+                    else {
+                        // All that's left is a M106 P S
+                        if (data.fanI < 0) {
+                            if (data.fanPwm < 0) {
+                                // Mo S - max the fan
+                                new_fanPwm = 255;
+                            }
+                            else {
+                                new_fanPwm = data.fanPwm;
+                                self.control.fanBlock[data.fanIndex] = new_fanPwm;
+                            }
+                        }
+                        self.control.fanSpeed(parseInt(new_fanPwm / 255 * 100));
+                        self.settings.defaultFanSpeed(parseInt(new_fanPwm / 255 * 100));
+                        self.settings.lastSentSpeed(parseInt(new_fanPwm / 255 * 100));
+                    }
+                }
             }
 
             // handle feed
             if(data.hasOwnProperty('feedNum')){
-                self.control.feedRate(data.feedNum);
-                self.control.baseFeedRate(parseInt(data.feedNum / 100) * 100);
+                // first get whether a Backup or Restore is happening
+                // B 'always' saves the old feedrate
+                if (data.feedB > 0) { self.control.feedBackup(self.control.feedRate()); }
+                // R restores the backup or the S supplied
+                if (data.feedR > 0) { self.control.feedRate(self.control.feedBackup()); }
+                // For tracking feedNum set to -1 if NO S-word
+                if (data.feedNum > 0) { self.control.feedRate(data.feedNum); }
+                self.control.baseFeedRate(parseInt(self.control.feedRate() / 100) * 100);
                 if (self.control.baseFeedRate() < 100) { self.control.baseFeedRate(100); }
-                self.control.displayfeedRate(data.feedNum - (self.control.baseFeedRate() - 100));
-                self.settings.defaultFeedR(data.feedNum);
-                self.settings.lastSentFeedR(data.feedNum);
+                self.control.displayfeedRate(self.control.feedRate() - (self.control.baseFeedRate() - 100));
+                self.settings.defaultFeedR(self.control.feedRate());
+                self.settings.lastSentFeedR(self.control.feedRate());
             }
 
             // handle flow
             if(data.hasOwnProperty('flowNum')){
-                self.control.flowRate(data.flowNum);
-                self.control.baseFlowRate(parseInt(data.flowNum / 100) * 100);
-                if (self.control.baseFlowRate() < 100) { self.control.baseFlowRate(100); }
-                self.control.displayflowRate(data.flowNum - (self.control.baseFlowRate() - 100));
-                self.settings.defaultFlowR(data.flowNum);
-                self.settings.lastSentFlowR(data.flowNum);
-                self.control.toolBlock[self.control.lastSentTool] = data.flowNum;
+                //alert("Tool "+self.control.lastSentTool);
+                if (self.control.lastSentTool < 0) {
+                    // we don't know which tool is active MUST use "N221" in connect script?
+                    self.control.lastSentTool = data.toolRef;
+                    self.control.toolNum(data.toolRef);
+                }
+                if (data.toolR > 0) {
+                    //use the toolRef as pointer into self.control.toolBlock array
+                    self.control.toolBlock[parseInt(data.toolRef)] == data.flowNum;
+                }
+                if (self.control.lastSentTool == parseInt(data.toolRef)) {
+                    self.control.flowRate(data.flowNum);
+                    self.control.baseFlowRate(parseInt(data.flowNum / 100) * 100);
+                    if (self.control.baseFlowRate() < 100) { self.control.baseFlowRate(100); }
+                    self.control.displayflowRate(data.flowNum - (self.control.baseFlowRate() - 100));
+                    self.settings.defaultFlowR(data.flowNum);
+                    self.settings.lastSentFlowR(data.flowNum);
+                    self.control.toolBlock[self.control.lastSentTool] = data.flowNum;
+                }
             }
 
             // handle tool change
             if(data.hasOwnProperty('toolNum')){
                 self.control.toolNum(data.toolNum);
-                if ( self.control.lastSentTool != self.control.toolNum() ) {
+                if (self.control.lastSentTool != self.control.toolNum()) {
                     self.control.flowRate(self.control.toolBlock[data.toolNum]);
                     self.control.baseFlowRate(parseInt(self.control.toolBlock[data.toolNum] / 100) * 100);
                     if (self.control.baseFlowRate() < 100) { self.control.baseFlowRate(100); }

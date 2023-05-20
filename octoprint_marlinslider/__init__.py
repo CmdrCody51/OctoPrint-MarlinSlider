@@ -153,24 +153,25 @@ class MarlinSliderPlugin(
                 fanPwm = fanPwm.group(1)
                 if Decimal(fanPwm) < self.minPWM and Decimal(fanPwm) != 0:
                     self._logger.info("fan pwm value " + str(fanPwm) + " is below threshold, increasing to " + str(self.minPWM) + " (" + str(self.minSpeed) + "%)")
-                    cmd = "M106 S" + str(self.minPWM)
-                    return cmd,
+                    new_cmd = cmd.replace("S" + str(fanPwm), "S" + str(self.minPWM) )
+                    return new_cmd,
                 elif Decimal(fanPwm) > self.maxPWM:
                     self._logger.info("fan pwm value " + str(fanPwm) + " is above threshold, decreasing to " + str(self.maxPWM) + " (" + str(self.maxSpeed) + "%)")
-                    cmd = "M106 S" + str(self.maxPWM)
-                    return cmd,
+                    new_cmd = cmd.replace("S" + str(fanPwm), "S" + str(self.maxPWM) )
+                    return new_cmd,
         elif gcode and gcode.startswith('M220'):
             feedNum = re.search("S(\d+\.?\d*)", cmd)
             if feedNum and feedNum.group(1):
                 feedNum = feedNum.group(1)
                 if Decimal(feedNum) < self.minFeedR and Decimal(feedNum) != 0:
                     self._logger.info("feed rate value " + str(feedNum) + " is below threshold, increasing to " + str(self.minFeedR) + " (" + str(self.minFeedR) + "%)")
-                    cmd = "M220 S" + str(self.minFeedR)
-                    return cmd,
+                    new_cmd = cmd.replace("S" + str(feedNum), "S" + str(self.minFeedR) )
+                    return new_cmd,
                 elif Decimal(feedNum) > self.maxFeedR:
                     self._logger.info("feed rate value " + str(feedNum) + " is above threshold, decreasing to " + str(self.maxFeedR) + " (" + str(self.maxFeedR) + "%)")
                     cmd = "M220 S" + str(self.maxFeedR)
-                    return cmd,
+                    new_cmd = cmd.replace("S" + str(feedNum), "S" + str(self.maxFeedR) )
+                    return new_cmd,
         elif gcode and gcode.startswith('M221'):
             flowNum = re.search("S(\d+\.?\d*)", cmd)
             if flowNum and flowNum.group(1):
@@ -178,32 +179,76 @@ class MarlinSliderPlugin(
                 if Decimal(flowNum) < self.minFlowR and Decimal(flowNum) != 0:
                     self._logger.info("flow rate value " + str(flowNum) + " is below threshold, increasing to " + str(self.minFlowR) + " (" + str(self.minFlowR) + "%)")
                     cmd = "M221 S" + str(self.minFlowR)
-                    return cmd,
+                    new_cmd = cmd.replace("S" + str(flowNum), "S" + str(self.minFlowR) )
+                    return new_cmd,
                 elif Decimal(flowNum) > self.maxFlowR:
                     self._logger.info("flow rate value " + str(flowNum) + " is above threshold, decreasing to " + str(self.maxFlowR) + " (" + str(self.maxFlowR) + "%)")
                     cmd = "M221 S" + str(self.maxFlowR)
-                    return cmd,
+                    new_cmd = cmd.replace("S" + str(flowNum), "S" + str(self.maxFlowR) )
+                    return new_cmd,
         elif gcode and gcode.startswith(('M106', 'M107')) and self.lockfan:
             self._logger.info("A cooling fan control command was seen, but fanspeedslider is locked. Control command " + str(cmd) + " removed from queue.")
             return None,
 
     def render_marlinslider(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
+# Fan stuff - On Off
         if gcode and gcode.startswith(('M106', 'M107')):
-            fanPwm = re.search("S(\d+\.?\d*)", cmd)
-            if fanPwm and fanPwm.group(1):
-                self._plugin_manager.send_plugin_message(self._identifier, {'fanPwm': float(fanPwm.group(1))})
-            elif gcode == 'M107':
-                self._plugin_manager.send_plugin_message(self._identifier, {'fanPwm': 0})
-            elif gcode == 'M106':
-                self._plugin_manager.send_plugin_message(self._identifier, {'fanPwm': 255})
+# M107 w-w/o P
+            if gcode.startswith('M107'):
+                fanPwm = re.search("S(\d+\.?\d*)", "S0")
+# M106 alome
+            elif cmd == 'M106':
+                fanPwm = re.search("S(\d+\.?\d*)", "S255")
+# M106 w S T I P 
+            elif gcode.startswith('M106'):
+                fanPwm = re.search("S(\d+\.?\d*)", cmd)
+# No S - tell me!
+                if fanPwm is None:
+                    fanPwm = re.search("S(-?\d+\.?\d*)", "S-1")
+# Fans - Track [P] [I] and [T]
+            fanI = cmd.find('I')
+            if fanI > 0:
+                fanPreset = re.search("I(\d+\.?\d*)", cmd)
+            else:
+                fanPreset = re.search("I(-?\d+\.?\d*)", "I-1")
+            fanP = cmd.find('P')
+            if fanP > 0:
+                fanIndex = re.search("P(\d+\.?\d*)", cmd)
+            else:
+                fanIndex = re.search("P(-?\d+\.?\d*)", "P-1")
+            fanT = cmd.find('T')
+            if fanT > 0:
+                fanSecnd = re.search("T(\d+\.?\d*)", cmd)
+            else:
+                fanSecnd = re.search("T(-?\d+\.?\d*)", "T-1")
+
+            self._plugin_manager.send_plugin_message(self._identifier, {'fanPwm': float(fanPwm.group(1)),'fanP': fanP,'fanI': fanI,'fanT': fanT,'fanIndex': float(fanIndex.group(1)),'fanPreset': float(fanPreset.group(1)),'fanSecnd': float(fanSecnd.group(1))})
+# Fans thru material presets
+        elif gcode and gcode.startswith('M145'):
+            # need S and F no S = S0
+            tool = re.search("S(\d+\.?\d*)", cmd)
+            if tool is None:
+                tool = re.search("S(\d+\.?\d*)", "S0")
+            fanPwm = re.search("F(\d+\.?\d*)", cmd)
+            if fanPwm and famPwm.group(1):
+                self._plugin_manager.send_plugin_message(self._identifier, {'fanPwm': float(fanPwm.group(1)),'fanP': -1,'fanI': -10,'fanT': -1,'fanIndex': -1.0,'fanPreset': float(tool.group(1)),'fanSecnd': -1.0})
+# Feedrate - Check for [B]ackup and [R]estore flags
         elif gcode and gcode.startswith('M220'):
             feedNum = re.search("S(\d+\.?\d*)", cmd)
+            feedB = cmd.find('B')
+            feedR = cmd.find('R')
             if feedNum and feedNum.group(1):
-                self._plugin_manager.send_plugin_message(self._identifier, {'feedNum': float(feedNum.group(1))})
+                self._plugin_manager.send_plugin_message(self._identifier, {'feedNum': float(feedNum.group(1)),'feedB': feedB,'feedR': feedR})
+            else:
+                self._plugin_manager.send_plugin_message(self._identifier, {'feedNum': float("-1"),'feedB': feedB,'feedR': feedR})
+# Flowrate - Track thr [T]ool presets
         elif gcode and gcode.startswith('M221'):
             flowNum = re.search("S(\d+\.?\d*)", cmd)
+            toolR = cmd.find('T')
+            if toolR > 0:
+                toolRef = re.search("T(\d+\.?\d*)", cmd)
             if flowNum and flowNum.group(1):
-                self._plugin_manager.send_plugin_message(self._identifier, {'flowNum': float(flowNum.group(1))})
+                self._plugin_manager.send_plugin_message(self._identifier, {'flowNum': float(flowNum.group(1)),'toolR': toolR, 'toolRef': float(toolRef.group(1))})
         elif gcode and gcode.startswith('T'):
             toolNum = re.search("T(\d+\.?\d*)", cmd)
             if toolNum and toolNum.group(1):
@@ -216,18 +261,25 @@ class MarlinSliderPlugin(
 # Recv: echo:E0 Flow: 100%
 # E0 thru E7
 # !!DEBUG:send echo:Ex Flow: 100%
+# Recv: echo:  M145 Sx Hxxx.xx Bxx.xx Fx
     def render_marlinslider_received(self, comm, line, *args, **kwargs):
-        if line and line.startswith(('FR', 'echo:E')):
+        if line and line.startswith(('FR', 'echo:E', 'echo:  M145')):
+# From M220        
             if line.startswith('FR'):
                 feedNum = re.search(":(\d+\.?\d*)", line)
                 if feedNum and feedNum.group(1):
                     self._plugin_manager.send_plugin_message(self._identifier, {'feedNum': float(feedNum.group(1))})
+# From M221                    
             elif line.startswith('echo:E'):
                 tool = re.search("E(\d+\.?\d*)", line)
                 flowNum = re.search("Flow: (\d+\.?\d*)", line)
                 if flowNum and flowNum.group(1):
-                    self._plugin_manager.send_plugin_message(self._identifier, {'toolNum': float(tool.group(1))})
-                    self._plugin_manager.send_plugin_message(self._identifier, {'flowNum': float(flowNum.group(1))})
+                    self._plugin_manager.send_plugin_message(self._identifier, {'flowNum': float(flowNum.group(1)), 'toolR': 1, 'toolRef': float(tool.group(1))})
+# From M503
+            elif line.startswith('echo:  M145'):
+                tool = re.search("S(\d+\.?\d*)", line)
+                fanPwm = re.search("F(\d+\.?\d*)", line)
+                self._plugin_manager.send_plugin_message(self._identifier, {'fanPwm': float(fanPwm.group(1)),'fanP': -1,'fanI': -10,'fanT': -1,'fanIndex': -1.0,'fanPreset': float(tool.group(1)),'fanSecnd': -1.0})
         return line
 
     def get_update_information(self):

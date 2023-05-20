@@ -9,7 +9,7 @@ authors:
 license: AGPLv3
 
 
-date: 2023-03-13
+date: 2023-05-13
 
 homepage: https://github.com/CmdrCody51/OctoPrint-MarlinSlider
 source: https://github.com/CmdrCody51/OctoPrint-MarlinSlider
@@ -23,6 +23,9 @@ screenshots:
 - url: /assets/img/plugins/marlinslider/slider.png
   alt: MarlinSlider Control tab
   caption: Control tab view of MarlonSlider
+- url: /assets/img/plugins/marlinslider/slider-tools.png
+  alt: MarlinSlider Control tab with Tools
+  caption: Control tab view of MarlonSlider using multiple tools
 - url: /assets/img/plugins/marlinslider/settings.png
   alt: Settings for MarlinSlider usage
   caption: MarlinSlider settings
@@ -39,6 +42,7 @@ compatibility:
 ---
 
 **TODO**: 
-Longer description of your plugin, configuration examples etc.
-This part will be visible on the page at http://plugins.octoprint.org/plugin/marlinslider/
-Adds sliders to the controls page for setting the speed of your fans, feedrate and flowrate. with a settings page that allows limiting the fan's output power and min/max feedrates and flowrates.
+Adds sliders to the controls page for setting the speed of your fans, feedrate and flowrate.
+With a settings page that allows limiting the fan's output power and min/max feedrates and flowrates.
+NOTE: When you are printing from an SD card that is attached directly to the printer, NONE of this works as the gcode does not pass through OctoPrint.
+
