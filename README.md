@@ -32,6 +32,7 @@ Under 'OctoPrint Settings (the wrench)' - 'Printer' - 'GCODE Scripts' - 'After s
 * M107 - Turn the fan off. (It usually is but this sets the fan to a known state).
 * M220 - Report current Feed Rate percentage.
 * M221 - Report current Flow Rate percentage.
+
 This way you don't have to click the Check buttons after you connect.
 
 ## Setup
