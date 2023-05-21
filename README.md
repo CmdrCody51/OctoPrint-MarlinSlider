@@ -25,6 +25,15 @@ Currently M710 Controller Fans and M123 - Fan Tachometers are not processed at a
 The Fan slider displays and controls the current tool/hotend parts cooling fan only.
 I don't have every possible 3d printer in the world ("'tis a consummation devoutly to be wish'd.") so I can not test all operations. Just fill out a Feature request with relevant logs (especially serial logs) and I'll see what we can do.
 
+## Tips and Tricks
+
+Under 'OctoPrint Settings (the wrench)' - 'Printer' - 'GCODE Scripts' - 'After serial connection to printer is established' you can add/modify it with
+* M503 S0 - Pulls the current EEProm settings from the printer. (The S0 says don't send all the 'wordy' stuff).
+* M107 - Turn the fan off. (It usually is but this sets the fan to a known state).
+* M220 - Report current Feed Rate percentage.
+* M221 - Report current Flow Rate percentage.
+This way you don't have to click the Check buttons after you connect.
+
 ## Setup
 
 Install via the bundled [Plugin Manager](https://docs.octoprint.org/en/master/bundledplugins/pluginmanager.html)
