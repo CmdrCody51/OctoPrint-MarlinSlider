@@ -47,7 +47,7 @@ or manually using this URL:
 This is a fork from the first OctoPrint Fan Speed Slider by NTOFF since the main project is abandoned. Then BERTUGARANGOU's fork that made it compatible with Python 3. And then JNEILLIII who added the logic to set fan speed based on sent/received gcode.<br>
 I only filled out the two other sliders after Marlin added the responses.
 
-![](./image/Ko-fi_Donate.png)(https://ko-fi.com/cmdrcody) or ![](./image/github-mark-small.png)(https://github.com/CmdrCody51/OctoPrint-MarlinSlider)Use GitHub!
+[![Ko-Fi](./image/Ko-fi_Donate.png)](https://ko-fi.com/cmdrcody) or [![GitHub](./image/github-mark-small.png)](https://github.com/CmdrCody51/OctoPrint-MarlinSlider) Use GitHub!
 
 <small>You can also send funds via PayPal to cmdrcody&#64;pharowt&#46;com</small>
 
