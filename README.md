@@ -28,7 +28,7 @@ I don't have every possible 3d printer in the world ("'tis a consummation devout
 ## Tips and Tricks
 
 Under 'OctoPrint Settings (the wrench)' - 'Printer' - 'GCODE Scripts' - 'After serial connection to printer is established' you can add/modify it with
-* M503 S0 - Pulls the current EEProm settings from the printer. (The S0 says don't send all the 'wordy' stuff).
+* M503 S0 - Pulls the current EEProm settings from the printer. (The S0 says don't send all the 'descriptive text').
 * M107 - Turn the fan off. (It usually is but this sets the fan to a known state).
 * M220 - Report current Feed Rate percentage.
 * M221 - Report current Flow Rate percentage.
@@ -46,3 +46,8 @@ or manually using this URL:
 
 This is a fork from the first OctoPrint Fan Speed Slider by NTOFF since the main project is abandoned. Then BERTUGARANGOU's fork that made it compatible with Python 3. And then JNEILLIII who added the logic to set fan speed based on sent/received gcode.<br>
 I only filled out the two other sliders after Marlin added the responses.
+
+![](./image/Ko-fi_Donate.png)(https://ko-fi.com/cmdrcody) or ![](./image/github-mark-small.png)(https://github.com/CmdrCody51/OctoPrint-MarlinSlider)Use GitHub!
+
+<small>You can also send funds via PayPal to cmdrcody&#64;pharowt&#46;com</small>
+

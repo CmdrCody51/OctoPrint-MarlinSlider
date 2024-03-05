@@ -230,7 +230,7 @@ class MarlinSliderPlugin(
             if tool is None:
                 tool = re.search("S(\d+\.?\d*)", "S0")
             fanPwm = re.search("F(\d+\.?\d*)", cmd)
-            if fanPwm and famPwm.group(1):
+            if fanPwm and fanPwm.group(1):
                 self._plugin_manager.send_plugin_message(self._identifier, {'fanPwm': float(fanPwm.group(1)),'fanP': -1,'fanI': -10,'fanT': -1,'fanIndex': -1.0,'fanPreset': float(tool.group(1)),'fanSecnd': -1.0})
 # Feedrate - Check for [B]ackup and [R]estore flags
         elif gcode and gcode.startswith('M220'):
