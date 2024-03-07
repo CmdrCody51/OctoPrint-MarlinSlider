@@ -247,6 +247,8 @@ class MarlinSliderPlugin(
             toolR = cmd.find('T')
             if toolR > 0:
                 toolRef = re.search("T(\d+\.?\d*)", cmd)
+            else:
+                toolRef = re.search("T(\d+\.?\d*)", "T0") # should be current tool?
             if flowNum and flowNum.group(1):
                 self._plugin_manager.send_plugin_message(self._identifier, {'flowNum': float(flowNum.group(1)),'toolR': toolR, 'toolRef': float(toolRef.group(1))})
         elif gcode and gcode.startswith('T'):
